@@ -2,50 +2,50 @@
   set_fact:
     minio_single_volumes: MINIO_VOLUMES="/mnt/data/disk{1...{{ disks_per_node }}}"
   when: deployment_type == "single" and not tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Single - Copy MinIO config
   template:
     src: "templates/minio.j2"
     dest: "/etc/default/minio"
   when: deployment_type == "single" and not tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Single-TLS - Update MINIO_VOLUMES based on the number of formatted disks
   set_fact:
     minio_single_volumes: MINIO_VOLUMES="/mnt/data/disk{1...{{ disks_per_node }}}"
   when: deployment_type == "single" and tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Single-TLS - Copy MinIO config
   template:
     src: "templates/minio-single-tls.j2"
     dest: "/etc/default/minio"
   when: deployment_type == "single" and tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Multi - Update MINIO_VOLUMES based on the number of formatted disks
   set_fact:
     minio_multi_volumes: MINIO_VOLUMES="http://{{ node_name_base }}{1...{{ node_count }}}.{{ base_domain }}:9000/mnt/data/disk{1...{{ disks_per_node }}}"
   when: deployment_type == "multi" and not tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Multi - Copy MinIO config
   template:
     src: "templates/minio-multi-tls.j2"
     dest: "/etc/default/minio"
   when: deployment_type == "multi" and not tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Multi-TLS - Update MINIO_VOLUMES based on the number of formatted disks
   set_fact:
     minio_multi_tls_volumes: MINIO_VOLUMES="https://{{ node_name_base }}{1...{{ node_count }}}.{{ base_domain }}:9000/mnt/data/disk{1...{{ disks_per_node }}}"
   when: deployment_type == "multi" and tls_enabled
-  tags: minio
+  tags: minio, minio-config
 
 - name: Multi-TLS - Copy MinIO config
   template:
     src: "templates/minio-multi-tls.j2"
     dest: "/etc/default/minio"
   when: deployment_type == "multi" and tls_enabled
-  tags: minio
+  tags: minio, minio-config

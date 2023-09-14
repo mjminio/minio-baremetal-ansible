@@ -2,8 +2,7 @@
   ansible.builtin.group:
     name: minio-user
     state: present
-  tags:
-    - minio
+  tags: minio, minio-user
 
 - name: Create minio-user
   ansible.builtin.user:
@@ -11,8 +10,7 @@
     group: minio-user
     createhome: yes
     system: yes
-  tags:
-    - minio
+ tags: minio, minio-user
 
 - name: Set ownership of mount point
   ansible.builtin.file:
@@ -20,6 +18,5 @@
     owner: minio-user
     group: minio-user
     recurse: yes
-  tags:
-    - minio
+ tags: minio, minio-user
 
