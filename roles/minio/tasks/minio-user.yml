@@ -10,7 +10,7 @@
     group: minio-user
     createhome: yes
     system: yes
- tags: minio, minio-user
+  tags: minio, minio-user
 
 - name: Set ownership of mount point
   ansible.builtin.file:
@@ -18,5 +18,5 @@
     owner: minio-user
     group: minio-user
     recurse: yes
- tags: minio, minio-user
+  tags: minio, minio-user
 
