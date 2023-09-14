@@ -1,32 +1,48 @@
+---
 - name: Get list of all block devices
-  command: lsblk -J -n -o NAME,MOUNTPOINT,TYPE,SIZE
+  command: lsblk -J -n -o NAME,MOUNTPOINT,TYPE,SIZE,FSTYPE
   register: block_devices
 
 - name: Convert lsblk output to dict
   set_fact:
     all_disks: "{{ block_devices.stdout | from_json }}"
+    
+- name: Check if drives are mounted
+  command: findmnt --json
+  register: mounted_drives
+  changed_when: false  # To prevent the task from always appearing as changed
 
-- name: Filter for unmounted devices except root, those with children, and size over 10 GB
+- name: Convert findmnt output to JSON
   set_fact:
-    unmounted_disks: "{{ all_disks.blockdevices | selectattr('mountpoint', 'none') | selectattr('type', 'equalto', 'disk') | rejectattr('children', 'defined') | rejectattr('size', 'lt', '10000000000') | map(attribute='name') | list }}"
+    mounted_drives_json: "{{ mounted_drives.stdout | from_json }}"
+  when: mounted_drives.rc == 0  # Only convert if the command succeeded
+
+- name: Filter for unmounted and unformatted devices except root, those with children, and size over 10 GB
+  set_fact:
+    unmounted_unformatted_disks: "{{ all_disks.blockdevices | selectattr('mountpoint', 'none') | selectattr('type', 'equalto', 'disk') | rejectattr('children', 'defined') | rejectattr('size', 'lt', '10000000000') | rejectattr('fstype', 'ne', None) | map(attribute='name') | list }}"
   when: all_disks.blockdevices | length > 0
 
-- name: Debug unmounted_disks
+- name: Debug unmounted_unformatted_disks
   debug:
-    var: unmounted_disks
+    var: unmounted_unformatted_disks
 
-- name: Format unmounted disks with xfs and assign labels
+- name: sleep for 30 seconds
+  pause:
+    seconds: 30
+
+- name: Format unmounted and unformatted disks with xfs and assign labels
   command: mkfs.xfs -L "DISK{{ item.0 }}" "/dev/{{ item.1 }}"
   with_together:
-    - "{{ range(1, unmounted_disks | length + 1) | list }}"
-    - "{{ unmounted_disks }}"
-  when: unmounted_disks | length > 0
+    - "{{ range(1, unmounted_unformatted_disks | length + 1) | list }}"
+    - "{{ unmounted_unformatted_disks }}"
+  register: formatted_disks_list
+  when: unmounted_unformatted_disks | length > 0
 
 - name: Create mount directories
   file:
     path: "{{ mount_point_base }}/{{ mount_point_base_dir }}{{ item }}"
     state: directory
-  loop: "{{ range(1, unmounted_disks | length + 1) | list }}"
+  loop: "{{ range(1, unmounted_unformatted_disks | length + 1) | list }}"
 
 - name: Mount using disk labels and add to fstab
   mount:
@@ -37,4 +53,6 @@
     dump: 0
     passno: 2
     state: mounted
-  loop: "{{ range(1, unmounted_disks | length + 1) | list }}"
+  loop: "{{ range(1, unmounted_unformatted_disks | length + 1) | list }}"
+
+

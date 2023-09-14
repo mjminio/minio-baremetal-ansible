@@ -1,6 +1,7 @@
 **/inventory/inventory
 **/all.yml
 *.old
+*.orig
 
 # Ignore TLS and SSH Keys
 *.key
