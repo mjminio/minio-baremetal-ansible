@@ -1,0 +1,25 @@
+- name: Download MinIO server for Debian/Ubuntu
+  get_url:
+    url: https://dl.min.io/server/minio/release/linux-amd64/archive/{{ minio_deb_release }}.deb
+    dest: /tmp/minio.deb
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  tags: minio
+
+- name: Install MinIO server
+  apt:
+    deb: /tmp/minio.deb
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  tags: minio
+
+- name: Download MinIO server for RHEL
+  ansible.builtin.command:
+    cmd: wget https://dl.min.io/server/minio/release/linux-amd64/archive/{{ minio_rpm_release }}.rpm -O /tmp/minio.rpm && sudo dnf install /tmp/minio.rpm
+  when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora' or ansible_distribution == 'OracleLinux' or ansible_distribution == 'Amazon' or ansible_distribution == 'Rocky' or ansible_distribution == 'AlmaLinux'
+  tags: minio
+
+- name: Download minio client native binary
+  ansible.builtin.get_url:
+    url: https://dl.min.io/client/mc/release/linux-amd64/mc
+    dest: /usr/local/bin
+    mode: '0777'
+  tags: minio

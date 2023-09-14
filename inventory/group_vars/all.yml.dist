@@ -1,0 +1,39 @@
+---
+# General Variables
+# This is the base name for the nodes. The node count will be appended to this name.
+node_name_base: minio-test-
+# This is the number of nodes in your deployment. The node name base will be appended with a number starting at 1.
+node_count: 8
+# This is the number of disks per node. The disk prefix will be appended with a number starting at 1.
+disks_per_node: 8
+# This is the type of deployment. Valid values are single and multi.
+deployment_type: multi
+# This is the base domain for your deployment. The node name base will be appended with a number starting at 1.
+base_domain: YOUR-DOMAIN.TLD
+# This is the URL for your MinIO deployment when using a load balancer. This will be used to generate the MinIO service URL.
+minio_multi_url: YOUR-LOAD-BALANCER-URL
+# This is the username for your MinIO deployment.
+minio_user: minio
+# This is the password for your MinIO deployment. Make sure to change this to something secure.
+minio_password: minio123
+# Find the version you want to deploy here: https://dl.min.io/server/minio/release/linux-amd64/archive/
+# This is the MinIO release for Debian based systems.
+minio_deb_release: minio_20230907020502.0.0_amd64
+# This is the MinIO release for Red Hat based systems.
+minio_rpm_release: minio-20230907020502.0.0.x86_64
+
+# TLS
+# This enables TLS for your MinIO deployment. Options are true and false.
+tls_enabled: true
+# This is the path to your private key.
+minio_private_key_path: files/certs/private.key
+# This is the path to your public key.
+minio_public_key_path: files/certs/public.crt
+# This is the path to your third party CA. This is only needed if you are using a self signed certificate.
+third_party_ca_path: files/certs/ca.crt
+
+# Do not change these values unless you know what you are doing
+minio_system_user: minio-user
+mount_point_base: /mnt/data
+mount_point_base_dir: disk
+

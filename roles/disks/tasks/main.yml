@@ -1,0 +1,40 @@
+- name: Get list of all block devices
+  command: lsblk -J -n -o NAME,MOUNTPOINT,TYPE,SIZE
+  register: block_devices
+
+- name: Convert lsblk output to dict
+  set_fact:
+    all_disks: "{{ block_devices.stdout | from_json }}"
+
+- name: Filter for unmounted devices except root, those with children, and size over 10 GB
+  set_fact:
+    unmounted_disks: "{{ all_disks.blockdevices | selectattr('mountpoint', 'none') | selectattr('type', 'equalto', 'disk') | rejectattr('children', 'defined') | rejectattr('size', 'lt', '10000000000') | map(attribute='name') | list }}"
+  when: all_disks.blockdevices | length > 0
+
+- name: Debug unmounted_disks
+  debug:
+    var: unmounted_disks
+
+- name: Format unmounted disks with xfs and assign labels
+  command: mkfs.xfs -L "DISK{{ item.0 }}" "/dev/{{ item.1 }}"
+  with_together:
+    - "{{ range(1, unmounted_disks | length + 1) | list }}"
+    - "{{ unmounted_disks }}"
+  when: unmounted_disks | length > 0
+
+- name: Create mount directories
+  file:
+    path: "{{ mount_point_base }}/{{ mount_point_base_dir }}{{ item }}"
+    state: directory
+  loop: "{{ range(1, unmounted_disks | length + 1) | list }}"
+
+- name: Mount using disk labels and add to fstab
+  mount:
+    path: "{{ mount_point_base }}/{{ mount_point_base_dir }}{{ item }}"
+    src: "LABEL=DISK{{ item }}"
+    fstype: xfs
+    opts: "defaults,noatime"
+    dump: 0
+    passno: 2
+    state: mounted
+  loop: "{{ range(1, unmounted_disks | length + 1) | list }}"

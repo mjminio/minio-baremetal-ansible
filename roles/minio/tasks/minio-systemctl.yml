@@ -1,0 +1,17 @@
+- name: Start Minio
+  ansible.builtin.service:
+    name: minio
+    state: started
+  tags: minio, start-minio
+
+- name: Stop Minio
+  ansible.builtin.service:
+    name: minio
+    state: stopped
+  tags: never, stop-minio
+
+- name: Restart Minio
+  ansible.builtin.service:
+    name: minio
+    state: restarted
+  tags: never, restart-minio

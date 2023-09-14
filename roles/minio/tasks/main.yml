@@ -1,0 +1,6 @@
+---
+- include: minio-user.yml
+- include: install-minio.yml
+- include: install-tls.yml
+- include: minio-config.yml
+- include: minio-systemctl.yml

@@ -1,0 +1,37 @@
+--- 
+- name: Ensure Minio certs directory exists
+  file:
+    path: "/home/{{ minio_system_user }}/.minio/certs"
+    state: directory
+  tags: minio, minio-tls
+
+- name: Copy Minio private key
+  copy:
+    src: "{{ minio_private_key_path }}"
+    dest: "/home/{{ minio_system_user }}/.minio/certs/private.key"
+    owner: '{{ minio_system_user }}'
+    group: '{{ minio_system_user }}'
+    mode: '0644'
+  when: tls_enabled
+  tags: minio, minio-tls
+
+- name: Copy Minio public key
+  copy:
+    src: "{{ minio_public_key_path }}"
+    dest: "/home/{{ minio_system_user }}/.minio/certs/public.crt"
+    owner: '{{ minio_system_user }}'
+    group: '{{ minio_system_user }}'
+    mode: '0644'
+  when: tls_enabled
+  tags: minio, minio-tls
+
+- name: Copy third party CA
+  copy:
+    src: "{{ third_party_ca_path }}"
+    dest: "/home/{{ minio_system_user }}/.minio/certs/CAs/ca.crt"
+    owner: '{{ minio_system_user }}'
+    group: '{{ minio_system_user }}'
+    mode: '0644'
+  when: tls_enabled
+  ignore_errors: yes
+  tags: minio, minio-tls
